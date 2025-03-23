@@ -83,18 +83,37 @@ class SceneEnhancer {
         console.log('场景增强器初始化完成');
     }
 
+    getRandomGltfAnimal() {
+        let dog = {
+            scale: 0.01,
+            path: '/models/dog.glb'
+        }
+        let elephant = {
+            scale: 0.1,
+            path: '/models/elephant.glb'
+        }
+        let dinasor = {
+            scale: 1,
+            path: '/models/dinosaur.glb'
+        }
+        let crocdile = {
+            scale: 5,
+            path: '/models/crocodile.glb'
+        }
+        const animalList = [dog, elephant, dinasor, crocdile];
+        const animalConf = animalList[Math.floor(Math.random() * animalList.length)];
+        console.log('随机选择的动物配置:', animalConf.path); // 调试输出随机选择的动物配置
+        return animalConf;
+    }
     loadGltfAnimal() {
         // 用gltf loader加载随机的一个动物3d模型
-        const animalTypes = ['dog'];
-        const animalType = animalTypes[Math.floor(Math.random() * animalTypes.length)];
-        const animalPath = `/models/${animalType}.glb`;
-
         const loader = new GLTFLoader();
         const animalPool = this.animalPool;
         const scene = this.scene;
         for (let i = 0; i < 20; i++) {
             
-            loader.load(animalPath, (gltf) => {
+            const animalConf = this.getRandomGltfAnimal();
+            loader.load(animalConf.path, (gltf) => {
                 const animal = gltf.scene;
                 // 随机位置, 随机旋转
                 animal.position.set(
@@ -103,7 +122,7 @@ class SceneEnhancer {
                     Math.random() * 20 - 10
                 )
                 animal.rotation.y = Math.random() * Math.PI * 2;
-                animal.scale.set(0.01, 0.01, 0.01);
+                animal.scale.set(animalConf.scale, animalConf.scale, animalConf.scale);
                 animal.castShadow = true;
                 animal.receiveShadow = true;
                 animal.visible = false;
