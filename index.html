@@ -1,0 +1,620 @@
+<!DOCTYPE html lang="zh-CN">
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="battery-savings" content="allow">
+    <title>Webcam Runner</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4.1633558788/pose.js" crossorigin="anonymous" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #webcamView {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: 240px;
+            opacity: 0;
+        }
+        #skeletonCanvas {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: 240px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        #shadowCanvas {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 240px;
+            height: 180px;
+            pointer-events: none;
+            z-index: 8;
+            opacity: 0.7;
+        }
+        #gameStatus {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 100;
+        }
+        .overlay {
+            position: fixed;
+            color: white;
+            font-family: Arial, sans-serif;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            z-index: 100;
+        }
+        #instructions {
+            top: 10px;
+            left: 10px;
+            padding: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            z-index: 100;
+        }
+        #fps {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            z-index: 100;
+        }
+        #gameState {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        .status-good {
+            color: #4CAF50;
+        }
+        .status-warning {
+            color: #FFC107;
+        }
+        .status-error {
+            color: #F44336;
+        }
+        
+        /* 速度指示器样式 */
+        .speed-indicator {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            margin-left: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .speed-slow {
+            background-color: #B81D13;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        }
+        .speed-medium {
+            background-color: #EFB700;
+            color: #333; /* 黄色背景上使用深色文字更易读 */
+        }
+        .speed-fast {
+            background-color: #008450;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        }
+        
+        /* 右下角速度显示样式 */
+        #metrics-display span span {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        /* 移动端优化 */
+        @media screen and (max-width: 768px) {
+            /* 竖屏样式 */
+            @media (orientation: portrait) {
+                #metrics-display {
+                    font-size: 12px;
+                    padding: 5px;
+                    width: auto;
+                    right: 10px;
+                    bottom: 120px; /* 将metrics-display向上移动，避免与人物阴影重叠 */
+                    left: auto;
+                    z-index: 15; /* 确保metrics-display在阴影之上 */
+                    max-width: 45%; /* 限制最大宽度 */
+                }
+                #metrics-display div {
+                    margin-top: 3px;
+                }
+                /* 小屏幕设备额外优化 */
+                @media screen and (max-height: 600px) {
+                    #metrics-display {
+                        bottom: 150px; /* 在更小的屏幕上进一步上移 */
+                        font-size: 11px;
+                        padding: 4px;
+                    }
+                }
+            }
+            /* 横屏样式 */
+            @media (orientation: landscape) {
+                #metrics-display {
+                    font-size: 14px;
+                    padding: 8px;
+                    width: 40%;
+                    right: 10px;
+                    bottom: 40px;
+                    left: auto;
+                }
+            }
+            #gameStatus {
+                font-size: 12px;
+                padding: 5px;
+                width: 90%;
+                left: 5%;
+                right: 5%;
+                top: 10px;
+            }
+            #instructions {
+                font-size: 12px;
+                padding: 5px;
+                width: 90%;
+                left: 5%;
+                right: 5%;
+                top: 10px;
+            }
+            #gameState {
+                font-size: 12px;
+                padding: 5px;
+                width: 90%;
+                left: 5%;
+                right: 5%;
+                top: 20px;
+            }
+        }
+        #fullscreen-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        #fullscreen-button:hover {
+            background-color: #45a049;
+        }
+        .icon-container {
+            position: fixed;
+            top: 20px;
+            right: 65px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .icon-container a {
+            color: #333;
+            font-size: 24px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .icon-container a:hover {
+            color: #000;
+        }
+        
+        /* 引导提示框样式 */
+        #guide-prompt {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            z-index: 2000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-width: 80%;
+            transition: opacity 1.5s ease, visibility 1.5s ease;
+            width: auto;
+            height: auto;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        @media screen and (max-width: 768px) {
+            #guide-prompt {
+                font-size: 16px;
+                padding: 15px;
+                max-width: 85%;
+                width: 85%;
+                height: auto;
+                max-height: 65vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            #guide-prompt {
+                font-size: 14px;
+                padding: 10px;
+                max-width: 90%;
+                width: 90%;
+                height: auto;
+                max-height: 60vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+        
+        /* AI提示语样式 */
+        .ai-prompt {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.6em;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            max-width: 80%;
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+            width: auto;
+            height: auto;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 480px) {
+            .ai-prompt {
+                font-size: 1.2em;
+                padding: 10px;
+                max-width: 85%;
+                width: 85%;
+                height: auto;
+                max-height: 60vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .ai-prompt {
+                font-size: 1.4em;
+                padding: 12px;
+                max-width: 80%;
+                width: 80%;
+                height: auto;
+                max-height: 65vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+        
+        /* AI陪跑设置对话框样式 */
+        .modal-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            margin-top: 0;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .setting-group {
+            margin-bottom: 20px;
+        }
+        
+        .setting-group label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group {
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group label {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        
+        .modal-footer {
+            text-align: right;
+        }
+        
+        #save-ai-settings {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        #save-ai-settings:hover {
+            background-color: #45a049;
+        }
+        
+        .ai-status-indicator {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 40px;
+            z-index: 1000;
+            animation: fadeInOut 2s 3;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <video id="webcamView" playsinline></video>
+    <canvas id="skeletonCanvas"></canvas>
+    <canvas id="shadowCanvas"></canvas>
+    
+    <!-- 引导提示框 -->
+    <div id="guide-prompt">
+        <h3>Get Ready</h3>
+        <p>Please stand in front of the camera and start running in place!</p>
+        <p>The system will automatically detect your running motion</p>
+    </div>
+    
+    <!-- AI提示语 -->
+    <div class="ai-prompt" id="ai-prompt"></div>
+    
+    <!-- AI陪跑设置对话框 -->
+    <div id="ai-settings-dialog" class="modal-dialog" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>AI Running Companion Settings</h3>
+                <span class="close-button" id="close-ai-settings">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Prompt Type:</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="promptType" value="Encouragement" checked> Encouragement</label>
+                        <label><input type="checkbox" name="promptType" value="Teasing"> Teasing</label>
+                        <label><input type="checkbox" name="promptType" value="Fun Facts" checked> Fun Facts</label>
+                        <label><input type="checkbox" name="promptType" value="Challenge Tasks"> Challenge Tasks</label>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label>Prompt Frequency:</label>
+                    <select id="promptFrequency">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Prompt Style:</label>
+                    <select id="promptStyle">
+                        <option value="Humorous" selected>Humorous</option>
+                        <option value="Serious">Serious</option>
+                        <option value="Motivational">Motivational</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-ai-settings">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="gameStatus" style="display: none;" >
+        Game Status (FPS: <span id="fps">0</span>)<br>
+        Motion Quality: <span id="quality">0.0%</span><br>
+        <span id="speed">Current Speed: 0.0 m/s </span><br>
+        Steps: <span id="steps">0</span><br>
+        Calories: <span id="calories">0.0</span> kcal<br>
+        Weight: <span id="user-weight-debug" title="Click to change weight">60</span> kg<br>
+        Debug Info: <span id="debug">Getting ready...</span>
+    </div>
+    <div id="instructions">
+        <h2>Webcam Runner</h2>
+        <p>Please grant camera access to the application.</p>
+        <p>Please stand in front of the camera and start running in place!</p>
+        <p>The system will automatically detect your running motion</p>
+    </div>
+    <div id="gameState"></div>
+    <div id="metrics-display" style="position: fixed; right: 20px; background: rgba(0, 0, 0, 0.3); padding: 8px; border-radius: 8px; color: white; font-family: Arial, sans-serif;">
+      <div style="font-size: 16px; font-weight: bold;">
+        <span>🏃‍♂️ Speed: </span><span id="speed-bottom">0 km/h</span>
+      </div>
+      <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">
+        <span>👣 Steps: </span><span id="steps-bottom">0</span>
+      </div>
+      <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">
+        <span>🔥 Calories: </span><span id="calories-bottom">0.0</span> kcal
+      </div>
+      <div style="font-size: 16px; font-weight: bold; margin-top: 5px;">
+        <span>⚖️ Weight: </span><span id="weight-bottom" title="Click to change weight">60</span> kg
+      </div>
+    </div>
+    <div class="icon-container">
+        <a id="shareButton" href="#">
+            <i class="fas fa-share-square"></i>
+        </a>
+        <a id="aiSettingsButton" href="#" title="AI Running Companion Settings">
+            <i class="fas fa-cog"></i>
+        </a>
+        <a href="https://github.com/Jamesun921/cam-run" target="_blank">
+            <i class="fab fa-github"></i>
+        </a>
+    </div>
+    <button id="fullscreen-button">⛶</button>
+    <div class="ai-status-indicator"><i class="fas fa-robot"></i></div>
+    <!-- 第三方库 -->
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.149.0/examples/jsm/"
+          }
+        }
+      </script>
+    <!-- 游戏模块 -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/gameState.js"></script>
+    <script type="module" src="js/renderer.js"></script>
+    <script type="module" src="js/scene.js"></script>
+    <script type="module" src="js/pose.js"></script>
+    <script type="module" src="js/main.js"></script>
+    <script>
+        document.getElementById('fullscreen-button').addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+        
+        // 引导提示框逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            const guidePrompt = document.getElementById('guide-prompt');
+            
+            // 显示提示框
+            guidePrompt.style.display = 'block';
+            
+            // 监听用户开始跑步的事件
+            window.addEventListener('userStartedRunning', function() {
+                // 逐渐隐藏提示框
+                guidePrompt.style.opacity = '0';
+                guidePrompt.style.visibility = 'hidden';
+                
+                // 在动画完成后完全隐藏元素
+                setTimeout(function() {
+                    guidePrompt.style.display = 'none';
+                }, 1500);
+            });
+            
+            // AI陪跑设置对话框逻辑
+            const aiSettingsButton = document.getElementById('aiSettingsButton');
+            const aiSettingsDialog = document.getElementById('ai-settings-dialog');
+            const closeAiSettings = document.getElementById('close-ai-settings');
+            
+            // 打开设置对话框
+            aiSettingsButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                aiSettingsDialog.style.display = 'block';
+                
+                // 加载当前设置
+                if (window.aiCompanion) {
+                    const preference = window.aiCompanion.userPreference;
+                    
+                    // 设置复选框
+                    const checkboxes = document.querySelectorAll('input[name="promptType"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = preference.favoriteTypes.includes(checkbox.value);
+                    });
+                    
+                    // 设置下拉框
+                    document.getElementById('promptFrequency').value = preference.frequency;
+                    document.getElementById('promptStyle').value = preference.style;
+                }
+            });
+            
+            // 关闭设置对话框
+            closeAiSettings.addEventListener('click', function() {
+                aiSettingsDialog.style.display = 'none';
+            });
+        });
+    </script>
+    <script>
+        window.addEventListener('load', () => {
+            
+            if (typeof addAPIStatusIndicator === 'function') {
+                
+                addAPIStatusIndicator();
+            }
+        });
+    </script>
+ <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9007180274439710" crossorigin="anonymous"></script>
+</body>
+</html>
