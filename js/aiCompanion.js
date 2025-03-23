@@ -44,7 +44,8 @@ class AICompanion {
         this.statusIndicator = document.querySelector('.ai-status-indicator i');
         
         // 是否已初始化
-        this.initialized = false;
+        // 初始化为 true, 取消加载这个模块
+        this.initialized = true;
         
         // 初始化时检查API状态
         this.checkAPIStatus();

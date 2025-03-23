@@ -127,8 +127,8 @@ class SceneEnhancer {
         }
         
 
-        //const animalList = [dog, elephant, dinasor, crocdile];
-        const animalList = [chase, marshall, rocky, rubble, skye, zuma];
+        const animalList = [dog, elephant, dinasor, crocdile];
+        //const animalList = [chase, marshall, rocky, rubble, skye, zuma];
         const animalConf = animalList[Math.floor(Math.random() * animalList.length)];
         return animalConf;
     }

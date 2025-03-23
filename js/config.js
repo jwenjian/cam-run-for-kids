@@ -138,7 +138,7 @@ export const GAME_CONFIG = {
     
     // 新增：AI陪跑功能配置
     aiCompanion: {
-        enabled: true,                // 启用AI陪跑功能
+        enabled: false,                // 启用AI陪跑功能
         promptTypes: ['Encouragement', 'Prank', 'Fun Facts', 'Challenge'], // 提示语类型
         defaultFrequency: 'Medium',      // 默认提示频率
         defaultStyle: 'Humorous',          // 默认提示风格
