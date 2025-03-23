@@ -50,7 +50,7 @@ class Scene {
     }
 
     initCamera() {
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 10000);
         this.camera.position.set(0, 2, -5);
         this.camera.lookAt(0, 0, 5);
     }
@@ -60,7 +60,8 @@ class Scene {
             canvas: document.getElementById('gameCanvas'),
             antialias: false,
             powerPreference: 'high-performance',
-            precision: 'lowp'
+            precision: 'lowp',
+            logarithmicDepthBuffer: true
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); 

@@ -100,9 +100,36 @@ class SceneEnhancer {
             scale: 5,
             path: '/models/crocodile.glb'
         }
-        const animalList = [dog, elephant, dinasor, crocdile];
+
+        let marshall = {
+            scale: 5,
+            path: '/models/pawpatrol/marshall.glb'
+        }
+        let chase = {
+            scale: 5,
+            path: '/pawpatrol/models/chase.glb'
+        }
+        let rocky = {
+            scale: 5,
+            path: '/models/pawpatrol/rocky.glb'
+        }
+        let rubble = {
+            scale: 5,
+            path: '/models/pawpatrol/rubble.glb'
+        }
+        let skye = {
+            scale: 5,
+            path: '/models/pawpatrol/skye.glb'
+        }
+        let zuma = {
+            scale: 5,
+            path: '/models/pawpatrol/zuma.glb'
+        }
+        
+
+        //const animalList = [dog, elephant, dinasor, crocdile];
+        const animalList = [chase, marshall, rocky, rubble, skye, zuma];
         const animalConf = animalList[Math.floor(Math.random() * animalList.length)];
-        console.log('随机选择的动物配置:', animalConf.path); // 调试输出随机选择的动物配置
         return animalConf;
     }
     loadGltfAnimal() {
@@ -115,6 +142,7 @@ class SceneEnhancer {
             const animalConf = this.getRandomGltfAnimal();
             loader.load(animalConf.path, (gltf) => {
                 const animal = gltf.scene;
+                
                 // 随机位置, 随机旋转
                 animal.position.set(
                     Math.random() * 20 - 10,
