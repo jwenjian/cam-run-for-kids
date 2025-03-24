@@ -86,19 +86,19 @@ class SceneEnhancer {
     getRandomGltfAnimal() {
         let dog = {
             scale: 0.01,
-            path: '/models/dog.glb'
+            path: '/models/animal/dog.glb'
         }
         let elephant = {
             scale: 0.1,
-            path: '/models/elephant.glb'
+            path: '/models/animal/elephant.glb'
         }
         let dinasor = {
             scale: 1,
-            path: '/models/dinosaur.glb'
+            path: '/models/animal/dinosaur.glb'
         }
         let crocdile = {
             scale: 5,
-            path: '/models/crocodile.glb'
+            path: '/models/animal/crocodile.glb'
         }
 
         let marshall = {
@@ -128,8 +128,24 @@ class SceneEnhancer {
         
 
         const animalList = [dog, elephant, dinasor, crocdile];
-        //const animalList = [chase, marshall, rocky, rubble, skye, zuma];
-        const animalConf = animalList[Math.floor(Math.random() * animalList.length)];
+        const pawpatrolList = [chase, marshall, rocky, rubble, skye, zuma];
+        let objList = [];
+
+        // get ?mode=<> from url and select one from animalList or pawpatrolList
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        switch (mode) {
+            case 'animal':
+                objList = animalList;
+                break;
+            case 'pawpatrol':
+                objList = pawpatrolList;
+                break;
+            default:
+                objList = animalList;
+                break;
+        }   
+        const animalConf = objList[Math.floor(Math.random() * objList.length)];
         return animalConf;
     }
     loadGltfAnimal() {

@@ -505,47 +505,6 @@
     <!-- AI提示语 -->
     <div class="ai-prompt" id="ai-prompt"></div>
 
-    <!-- AI陪跑设置对话框 -->
-    <div id="ai-settings-dialog" class="modal-dialog" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>AI Running Companion Settings</h3>
-                <span class="close-button" id="close-ai-settings">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="setting-group">
-                    <label>Prompt Type:</label>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" name="promptType" value="Encouragement" checked>
-                            Encouragement</label>
-                        <label><input type="checkbox" name="promptType" value="Teasing"> Teasing</label>
-                        <label><input type="checkbox" name="promptType" value="Fun Facts" checked> Fun Facts</label>
-                        <label><input type="checkbox" name="promptType" value="Challenge Tasks"> Challenge Tasks</label>
-                    </div>
-                </div>
-                <div class="setting-group">
-                    <label>Prompt Frequency:</label>
-                    <select id="promptFrequency">
-                        <option value="Low">Low</option>
-                        <option value="Medium" selected>Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                </div>
-                <div class="setting-group">
-                    <label>Prompt Style:</label>
-                    <select id="promptStyle">
-                        <option value="Humorous" selected>Humorous</option>
-                        <option value="Serious">Serious</option>
-                        <option value="Motivational">Motivational</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="save-ai-settings">Save Settings</button>
-            </div>
-        </div>
-    </div>
-
     <div id="gameStatus" style="display: none;">
         Game Status (FPS: <span id="fps">0</span>)<br>
         Motion Quality: <span id="quality">0.0%</span><br>
@@ -580,9 +539,6 @@
     <div class="icon-container">
         <a id="shareButton" href="#">
             <i class="fas fa-share-square"></i>
-        </a>
-        <a id="aiSettingsButton" href="#" title="AI Running Companion Settings">
-            <i class="fas fa-cog"></i>
         </a>
         <a href="https://github.com/jwenjian/cam-run-for-kids" target="_blank">
             <i class="fab fa-github"></i>

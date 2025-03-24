@@ -229,12 +229,12 @@ window.addEventListener('load', () => {
     game.init().catch(console.error);
     
     document.getElementById('shareButton').addEventListener('click', function() {
-        const websiteUrl = window.location.href;
+        const websiteUrl = "https://ouo.io/wiFhnzJ";
         const steps = gameState.getSteps(); 
         const calories = gameState.getCalories(); 
-        const shareText = `I just completed ${steps} steps and burned ${calories} calories on ${websiteUrl}! Try it out!`;
+        const shareText = `I just completed ${steps} steps and burned ${calories} calories on ${websiteUrl}! Try it out! | 我刚刚在 ${websiteUrl} (摄像头跑步游戏) 上完成了 ${steps} 步, 燃烧了 ${calories} 卡路里, 快来试试吧!`;
         navigator.clipboard.writeText(shareText).then(function() {
-            alert('Share content copied to clipboard!');
+            alert('Share content copied to clipboard! | 分享内容已拷贝到剪贴板, 快去分享吧!');
         }, function(err) {
             console.error('Failed to copy share content: ', err);
         });
