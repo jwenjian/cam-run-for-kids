@@ -162,20 +162,20 @@ class Game {
             await aiCompanion.init();
             
             // Add AI settings button event listener
-            document.getElementById('aiSettingsButton').addEventListener('click', (e) => {
-                e.preventDefault();
-                aiCompanion.showSettingsDialog();
-            });
+            // document.getElementById('aiSettingsButton').addEventListener('click', (e) => {
+            //     e.preventDefault();
+            //     aiCompanion.showSettingsDialog();
+            // });
 
             // 绑定保存按钮事件
-            document.getElementById('save-ai-settings').addEventListener('click', () => {
-                aiCompanion.saveUserPreference();
-                const statusElement = document.createElement('div');
-                statusElement.textContent = 'Settings saved! ✔️';
-                statusElement.style.color = '#4CAF50';
-                document.body.appendChild(statusElement);
-                setTimeout(() => statusElement.remove(), 2000);
-            });
+            // document.getElementById('save-ai-settings').addEventListener('click', () => {
+            //     aiCompanion.saveUserPreference();
+            //     const statusElement = document.createElement('div');
+            //     statusElement.textContent = 'Settings saved! ✔️';
+            //     statusElement.style.color = '#4CAF50';
+            //     document.body.appendChild(statusElement);
+            //     setTimeout(() => statusElement.remove(), 2000);
+            // });
             
             // Start game loop
             this.isRunning = true;

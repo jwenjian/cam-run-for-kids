@@ -593,36 +593,7 @@
                 }, 1500);
             });
 
-            // AI陪跑设置对话框逻辑
-            const aiSettingsButton = document.getElementById('aiSettingsButton');
-            const aiSettingsDialog = document.getElementById('ai-settings-dialog');
-            const closeAiSettings = document.getElementById('close-ai-settings');
-
-            // 打开设置对话框
-            aiSettingsButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                aiSettingsDialog.style.display = 'block';
-
-                // 加载当前设置
-                if (window.aiCompanion) {
-                    const preference = window.aiCompanion.userPreference;
-
-                    // 设置复选框
-                    const checkboxes = document.querySelectorAll('input[name="promptType"]');
-                    checkboxes.forEach(checkbox => {
-                        checkbox.checked = preference.favoriteTypes.includes(checkbox.value);
-                    });
-
-                    // 设置下拉框
-                    document.getElementById('promptFrequency').value = preference.frequency;
-                    document.getElementById('promptStyle').value = preference.style;
-                }
-            });
-
-            // 关闭设置对话框
-            closeAiSettings.addEventListener('click', function () {
-                aiSettingsDialog.style.display = 'none';
-            });
+            
         });
     </script>
     <script>
