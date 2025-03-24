@@ -1,6 +1,6 @@
 {
-  "name": "Cam Run",
-  "short_name": "CamRun",
+  "name": "宝宝爱跑步 | Kids love running",
+  "short_name": "Kids love running",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
